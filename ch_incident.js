@@ -36,8 +36,24 @@ var geojsonMarkerOptions = {
     opacity: 1,
     fillOpacity: 0.8
 };
-var markersLayer = new L.LayerGroup(); // NOTE: Layer is created here!
+var markers = L.markerClusterGroup({
+        spiderfyShapePositions: function(count, centerPt) {
+            var distanceFromCenter = 35,
+                markerDistance = 45,
+                lineLength = markerDistance * (count - 1),
+                lineStart = centerPt.y - lineLength / 2,
+                res = [],
+                i;
 
+            res.length = count;
+
+            for (i = count - 1; i >= 0; i--) {
+                res[i] = new Point(centerPt.x + distanceFromCenter, lineStart + markerDistance * i);
+            }
+
+            return res;
+        }
+});
 class MapVis {
     constructor(){
         this.year = '2017';
@@ -51,8 +67,7 @@ class MapVis {
 
     render(){
         var thisvis = this;
-        // console.log(thisvis.year);
-        markersLayer.clearLayers();
+        markers.clearLayers();
         d3.csv(this.data_url, // got to the url
             function (datum) { // d is one row of the csv file, d is an object
                 return {
@@ -90,13 +105,14 @@ class MapVis {
 
                     var latlng = L.latLng(value.latitude, value.longitude);
                     var marker = L.circleMarker(latlng, geojsonMarkerOptions)
-                        .addTo(mymap)
                         .bindTooltip("incident ID: " + value.incidentid);
-                    markersLayer.addLayer(marker);
+                    markers.addLayer(marker);
                 }
             })
-            markersLayer.addTo(mymap);
+            mymap.addLayer(markers);
         });
+
+
     }
 }
 
