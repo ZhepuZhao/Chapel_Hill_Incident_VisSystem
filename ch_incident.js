@@ -57,6 +57,10 @@ var markers = L.markerClusterGroup({
 class MapVis {
     constructor(){
         this.year = '2017';
+        this.hour_of_occurence = 1; // set night as default
+        this.victim = 0; // set victim doesn't exist as default
+        this.victim_race = 'A';
+        this.victim_sex = 'F';
         this.data_url = './data/police-incident-reports-written.csv';
     }
 
@@ -64,12 +68,38 @@ class MapVis {
         this.year = new_year;
         this.render();
     }
+    setTime(new_time){
+        this.hour_of_occurence = new_time;
+        this.render();
+    }
+
+    setVictim(victim_exists){
+        this.victim = victim_exists;
+        if (victim_exists == 1) {
+            document.getElementById('victim_race').removeAttribute('disabled');
+            document.getElementById('victim_sex').removeAttribute('disabled');
+        } else {
+            document.getElementById('victim_race').setAttribute('disabled', 'disabled');
+            document.getElementById('victim_sex').setAttribute('disabled', 'disabled');
+        }
+        this.render();
+    }
+    setVictimSex(new_sex){
+        this.victim_sex = new_sex;
+        this.render();
+    }
+    setVictimRace(new_race){
+        this.victim_race = new_race;
+        this.render();
+    }
 
     render(){
+        d3.selectAll("svg").remove();
         var thisvis = this;
         markers.clearLayers();
         d3.csv(this.data_url, // got to the url
             function (datum) { // d is one row of the csv file, d is an object
+                var month = datum.DateOfOccurence.substring(0, datum.DateOfOccurence.lastIndexOf('-'));
                 return {
                     incidentid: datum.IncidentID,
                     agency: datum.Agency,
@@ -95,24 +125,152 @@ class MapVis {
                     victim_age: datum.VictimAge,
                     weapon_description: datum.WeaponDescription,
                     victim_race: datum.VictimRace,
-                    victim_gender: datum.VictimGender,
+                    victim_sex: datum.VictimGender,
+                    month: month, // 2017-06, only the year and month
                 }
             }).then(function (data) {
 
+            // plot points on the map
             data.forEach(function (value) {
-                var date = value.date_of_occurence.substring(0,4);
-                if (value.latitude != "" && value.longitude != "" && date == thisvis.year) {
 
-                    var latlng = L.latLng(value.latitude, value.longitude);
-                    var marker = L.circleMarker(latlng, geojsonMarkerOptions)
-                        .bindTooltip("incident ID: " + value.incidentid);
-                    markers.addLayer(marker);
+            function addIncidents() {
+                var latlng = L.latLng(value.latitude, value.longitude);
+                var marker = L.circleMarker(latlng, geojsonMarkerOptions)
+                    .bindTooltip("<b>Incident ID</b>: " + value.incidentid + "<br>" +
+                                "<b>Victim race</b>: " + value.victim_race + "<br>" +
+                            "<b>Victim sex</b>: " + value.victim_sex + "<br>" +
+                            "<b>Agency</b>: " + value.agency + "<br>" +
+                            "<b>Date of Occurence</b>: " + value.date_of_occurence + "<br>" +
+                            "<b>Hour of Occurence</b>: " + value.hour_of_occurence);
+                markers.addLayer(marker);
+            }
+            var date = value.date_of_occurence.substring(0,4);
+
+            // set occurence_time
+            var index = value.hour_of_occurence.indexOf(':');
+            var occurence_time = value.hour_of_occurence.substring(0,index);
+            if ((occurence_time >= 19 && occurence_time <= 23) ||
+                (occurence_time >= 0 && occurence_time <= 3)){ // occurence_time: 7pm - 23pm or 0am -3am
+                occurence_time = 1;
+            } else {
+                occurence_time = 0;
+            }
+
+            // set victim
+            var victim = 1;
+            if (value.victim_age == "" && value.victim_sex == "" && value.victim_race == "") {
+                victim = 0;
+            }
+
+            if (value.latitude != "" && value.longitude != "" &&
+                date == thisvis.year && occurence_time == thisvis.hour_of_occurence &&
+                victim == thisvis.victim) {
+                if (thisvis.victim == 1) {
+                    if (value.victim_sex == thisvis.victim_sex && value.victim_race == thisvis.victim_race){
+                        addIncidents();
+                    }
+                } else {
+                    addIncidents();
                 }
-            })
+            }
+
+        }) // end for 'foreach'
             mymap.addLayer(markers);
+
+            // draw the vertical bar chart of time trends on the right panel
+            // step1: extract the array of month from the 'data'
+            var month_map = data.filter(function (value) {
+                if(value.month.substring(0,4) == thisvis.year){
+                    return value;
+                }
+            }).map(function (value) {
+                return {
+                    month: value.month.substring(value.month.indexOf('-') + 1), // extract only the month
+                    count: 0,
+                };
+            });
+
+            var map = d3.map();
+
+            month_map.forEach(function (value) {
+                if (map.has(value.month)) {
+                    map.set(value.month, map.get(value.month) + 1);
+                } else {
+                    map.set(value.month, 1);
+                }
+            });
+
+            // step2: draw the diagram
+            // set margin
+            var margin = ({top: 50, right: 50, bottom: 50, left: 50})
+            var height = 400;
+            var width = document.getElementById('incident_type').getBoundingClientRect().width;
+
+            var x = d3.scaleBand()
+                .domain(map.entries().sort(function (a, b) { return d3.ascending(a.key, b.key) }).map(function (value) { console.log(value.key); return value.key; }))
+                .range([margin.left, width - margin.right]).padding(0.1);
+
+            // set y scale
+            var y = d3.scaleLinear()
+                .domain([0, d3.max(map.entries().map(function (value) { return value.value; }), function (value) {
+                    console.log(value);
+                    return value;
+                })])
+                .range([height - margin.bottom, margin.top]);
+
+
+            // add a svg first
+            var svg = d3.select('#incident_type').append('svg')
+                .attr('height', height)
+                .attr('width', width)
+                .append("g")
+                .attr("fill", "steelblue")
+                .selectAll("rect").data(map.entries()).enter().append("rect")
+                .attr("x", function (d) {
+                    return x(d.key);
+                })
+                .attr("y", function (d) {
+                    return y(d.value);
+                })
+                .attr("height", function (d) {
+                    return y(0) - y(d.value);
+                })
+                .attr("width", x.bandwidth());
+
+            // x-axis
+            var xAxis = function (g) {
+                g.attr("transform", "translate(0," +(height - margin.bottom)+")")
+                .call(d3.axisBottom(x));
+            }
+            svg.append("g")
+                .call(xAxis);
+
+            svg.append("text")
+                .attr("class", "axis-label")
+                .attr("y", height - 5)
+                .attr("x",0 + (width / 2))
+                .style("text-anchor", "middle")
+                .text("Month");
+
+            // y-axis
+            var yAxis = function (g) {
+                g.attr("transform", "translate("+margin.left+",0)")
+                .call(d3.axisLeft(y));
+            }
+            svg.append("text")
+                .attr("transform", "rotate(90)")
+                .attr("class", "axis-label")
+                .attr("y", -5)
+                .attr("x",0 + (height / 2))
+                .style("text-anchor", "middle")
+                .text("Number of incidents");
+
+            svg.append("g")
+                .call(yAxis);
+
+            // svg.exit().remove();
+
         });
-
-
     }
 }
 
@@ -145,16 +303,10 @@ class MapVis {
 //                     "<br />" + "weapon_description: " + feature.properties.weapon_description +
 //                     "<br />" + "street: " + feature.properties.street +
 //                     "<br />" + "offense: " + feature.properties.offense +
-//                     "<br />" + "victim_gender: " + feature.properties.victim_gender +
+//                     "<br />" + "victim_sex: " + feature.properties.victim_sex +
 //                     "<br />" + "victim_age: " + feature.properties.victim_age +
 //                     "<br />" + "victim_race: " + feature.properties.victim_race +
 //                     "<br />" + "hour_of_report: " + feature.properties.hour_of_report);
 //         }
 //     }).addTo(mymap);
 // });
-
-
-
-
-
-

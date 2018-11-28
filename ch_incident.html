@@ -73,6 +73,7 @@
                             Filters <span class="sr-only">(current)</span>
                         </a>
                     </li>
+                    <!--day time-->
                     <li class="nav-item">
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
@@ -81,12 +82,13 @@
                                     Time
                                 </label>
                             </div>
-                            <select class="custom-select">
+                            <select class="custom-select" onchange="map_vis.setTime(this.value);">
                                 <option value="1">Night</option>
-                                <option value="2">Day</option>
+                                <option value="0">Day</option>
                             </select>
                         </div>
                     </li>
+                    <!--victim or not-->
                     <li class="nav-item">
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
@@ -95,12 +97,13 @@
                                     Any Victim
                                 </label>
                             </div>
-                            <select class="custom-select">
+                            <select class="custom-select" onchange="map_vis.setVictim(this.value);">
+                                <option value="0">No</option>
                                 <option value="1">Yes</option>
-                                <option value="2">No</option>
                             </select>
                         </div>
                     </li>
+                    <!--victim sex: disabled before the victim is selected as yes-->
                     <li class="nav-item">
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
@@ -109,12 +112,13 @@
                                     Sex
                                 </label>
                             </div>
-                            <select class="custom-select">
-                                <option value="1">Male</option>
-                                <option value="2">Female</option>
+                            <select class="custom-select" disabled="disabled" id="victim_sex" onchange="map_vis.setVictimSex(this.value);">
+                                <option value="F">Female</option>
+                                <option value="M">Male</option>
                             </select>
                         </div>
                     </li>
+                    <!--vitim race: disabled before the victim is selected as yes-->
                     <li class="nav-item">
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
@@ -123,17 +127,18 @@
                                     Race
                                 </label>
                             </div>
-                            <select class="custom-select">
-                                <option value="1">A</option>
-                                <option value="2">B</option>
-                                <option value="2">H</option>
-                                <option value="2">W</option>
-                                <option value="2">I</option>
-                                <option value="2">O</option>
-                                <option value="2">U</option>
+                            <select class="custom-select" disabled="disabled" id="victim_race" onchange="map_vis.setVictimRace(this.value);">
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="H">H</option>
+                                <option value="I">I</option>
+                                <option value="O">O</option>
+                                <option value="U">U</option>
+                                <option value="W">W</option>
                             </select>
                         </div>
                     </li>
+                    <!--severity-->
                     <li class="nav-item">
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
@@ -151,6 +156,7 @@
                             </select>
                         </div>
                     </li>
+                    <!--year-->
                     <li class="nav-item">
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
@@ -180,65 +186,54 @@
             <div class="row">
 
                 <!--map-->
-                <div class="col-md-9" id="mapid"></div>
+                <div class="col-md-7" id="mapid"></div>
 
                 <!--analysis section-->
-                <div class="col-md-3 container">
+                <div class="col-md-5 container">
                     <h5>INCIDENT ANALYSIS</h5>
                     <!--collapse bar-->
                     <div class="accordion" id="accordionExample">
+                        <!--incident summary-->
                         <div class="card">
-                            <div class="card-header" id="headingOne">
-                                <h5 class="mb-0">
-                                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                        INCIDENT SUMMARY
-                                    </button>
-                                </h5>
+                            <div class="card-header">
+                                <b>INCIDENT SUMMARY</b>
                             </div>
-
-                            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
-                                <div class="card-body">
-                                    <table>
-                                        <tr>
-                                            <th>Incident type</th>
-                                            <th>Average</th>
-                                        </tr>
-                                        <tr>
-                                            <td>violent</td>
-                                            <td>12</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Property</td>
-                                            <td>10</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Quality of Life</td>
-                                            <td>45</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Alarm</td>
-                                            <td>5</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Other</td>
-                                            <td>78</td>
-                                        </tr>
-                                    </table>
-                                </div>
+                            <div class="card-body">
+                                <table>
+                                    <tr>
+                                        <th>Incident type</th>
+                                        <th>Average</th>
+                                    </tr>
+                                    <tr>
+                                        <td>violent</td>
+                                        <td>12</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Property</td>
+                                        <td>10</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Quality of Life</td>
+                                        <td>45</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Alarm</td>
+                                        <td>5</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Other</td>
+                                        <td>78</td>
+                                    </tr>
+                                </table>
                             </div>
                         </div>
+                        <!--incident trends-->
                         <div class="card">
-                            <div class="card-header" id="headingTwo">
-                                <h5 class="mb-0">
-                                    <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                        INCIDENT TRENDS
-                                    </button>
-                                </h5>
+                            <div class="card-header">
+                                <b>INCIDENT TRENDS</b>
                             </div>
-                            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
-                                <div class="card-body">
-                                    Trend Figure
-                                </div>
+                            <div id="incident_type" class="card-body">
+
                             </div>
                         </div>
                     </div>
