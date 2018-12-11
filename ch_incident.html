@@ -6,51 +6,26 @@
 
     <title>Chapel Hill Incident</title>
     <!--Include Leaflet CSS file in the head section of the document:-->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
-          integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
-          crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css" integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==" crossorigin=""/>
+    <!--boostrap StyleSheet-->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <!--dashboard StyleSheet-->
     <link  rel="stylesheet" href="./css/dashboard.css">
-
+    <!--leaflet marker cluster StyleSheet-->
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css">
+    <!-- Esri Leaflet Geocoder Extension StyleSheet -->
+    <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder@2.2.13/dist/esri-leaflet-geocoder.css" integrity="sha512-v5YmWLm8KqAAmg5808pETiccEohtt8rPVMGQ1jA6jqkWVydV5Cuz3nJ9fQ7ittSxvuqsvI9RSGfVoKPaAJZ/AQ==" crossorigin="">
+    <!--self defined StyleSheet-->
     <style>
-        #mapid {
-            height: 600px;
+        #map {
+            height: 680px;
         }
 
-        .slider-color {
-            -webkit-appearance: none;
-            width: 80%;
-            height: 15px;
-            border-radius: 5px;
-            background: #d3d3d3;
-            outline: none;
-            opacity:0.7;
-            -webkit-transition: opacity .15s ease-in-out;
-            transition: opacity .15s ease-in-out;
+        .line {
+            fill: none;
+            stroke: steelblue;
+            stroke-width: 2px;
         }
-        .slider-color:hover {
-            opacity:1;
-        }
-        .slider-color::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            background: #4CAF50;
-            cursor: pointer;
-        }
-        .slider-color::-moz-range-thumb {
-            width: 25px;
-            height: 25px;
-            border: 0;
-            border-radius: 50%;
-            background: #4CAF50;
-            cursor: pointer;
-        }
-
-
     </style>
 
 </head>
@@ -83,6 +58,7 @@
                                 </label>
                             </div>
                             <select class="custom-select" onchange="map_vis.setTime(this.value);">
+                                <option value="all">All</option>
                                 <option value="1">Night</option>
                                 <option value="0">Day</option>
                             </select>
@@ -98,6 +74,7 @@
                                 </label>
                             </div>
                             <select class="custom-select" onchange="map_vis.setVictim(this.value);">
+                                <option value="all">All</option>
                                 <option value="0">No</option>
                                 <option value="1">Yes</option>
                             </select>
@@ -113,6 +90,7 @@
                                 </label>
                             </div>
                             <select class="custom-select" disabled="disabled" id="victim_sex" onchange="map_vis.setVictimSex(this.value);">
+                                <option value="all">All</option>
                                 <option value="F">Female</option>
                                 <option value="M">Male</option>
                             </select>
@@ -128,31 +106,33 @@
                                 </label>
                             </div>
                             <select class="custom-select" disabled="disabled" id="victim_race" onchange="map_vis.setVictimRace(this.value);">
-                                <option value="A">A</option>
-                                <option value="B">B</option>
-                                <option value="H">H</option>
-                                <option value="I">I</option>
-                                <option value="O">O</option>
-                                <option value="U">U</option>
-                                <option value="W">W</option>
+                                <option value="all">All</option>
+                                <option value="A">Asian</option>
+                                <option value="B">Black or African American</option>
+                                <option value="H">Hispanic/Latino</option>
+                                <option value="I">Native Hawaiian or Other Pacific Islander</option>
+                                <option value="O">Other</option>
+                                <option value="U">American Indian or Alaska Native</option>
+                                <option value="W">White</option>
                             </select>
                         </div>
                     </li>
-                    <!--severity-->
+                    <!--category-->
                     <li class="nav-item">
                         <div class="input-group mb-3">
                             <div class="input-group-prepend">
                                 <label class="input-group-text">
                                     <span data-feather="clock"></span>
-                                    Severity
+                                    Category
                                 </label>
                             </div>
-                            <select class="custom-select">
-                                <option value="1">Least Severe</option>
-                                <option value="2">Somewhat Severe</option>
-                                <option value="2">Severe</option>
-                                <option value="2">Very Severe</option>
-                                <option value="2">Extremely Severe</option>
+                            <select class="custom-select" onchange="map_vis.setIncidentType(this.value);">
+                                <option value="all">All</option>
+                                <option value="PERSONAL CRIME">Personal</option>
+                                <option value="PROPERTY CRIME">Property</option>
+                                <option value="INCOMPLETE CRIME">Attempted</option>
+                                <option value="STATUTORY CRIME">Statutory</option>
+                                <option value="OTHER">Other</option>
                             </select>
                         </div>
                     </li>
@@ -183,71 +163,49 @@
             <div class="pb-2 mb-3"></div>
 
             <!--leaflet map && map analysis-->
-            <div class="row">
+            <div class="row" id="app">
 
                 <!--map-->
-                <div class="col-md-7" id="mapid"></div>
+                <div class="col-md-7" id="map"></div>
 
                 <!--analysis section-->
                 <div class="col-md-5 container">
                     <h5>INCIDENT ANALYSIS</h5>
+
                     <!--collapse bar-->
                     <div class="accordion" id="accordionExample">
                         <!--incident summary-->
                         <div class="card">
                             <div class="card-header">
-                                <b>INCIDENT SUMMARY</b>
+                                <button class="btn btn-info" type="button" data-toggle="collapse" data-target="#multiCollapseExample1" aria-expanded="false" aria-controls="multiCollapseExample2">Incident Type Summary Within the year</button>
                             </div>
-                            <div class="card-body">
-                                <table>
-                                    <tr>
-                                        <th>Incident type</th>
-                                        <th>Average</th>
-                                    </tr>
-                                    <tr>
-                                        <td>violent</td>
-                                        <td>12</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Property</td>
-                                        <td>10</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Quality of Life</td>
-                                        <td>45</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Alarm</td>
-                                        <td>5</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Other</td>
-                                        <td>78</td>
-                                    </tr>
-                                </table>
+                            <div class="collapse multi-collapse" id="multiCollapseExample1">
+                                <div id="incident_type" class="card-body "></div>
                             </div>
                         </div>
                         <!--incident trends-->
                         <div class="card">
                             <div class="card-header">
-                                <b>INCIDENT TRENDS</b>
+                                <button class="btn btn-warning" type="button" data-toggle="collapse" data-target="#multiCollapseExample2" aria-expanded="false" aria-controls="multiCollapseExample2">Incident Number Within the year</button>
                             </div>
-                            <div id="incident_type" class="card-body">
+                            <div class="collapse multi-collapse" id="multiCollapseExample2">
+                                <div id="incident_trend" class="card-body"></div>
+                            </div>
 
+                        </div>
+                        <!--line chart across years-->
+                        <div class="card">
+                            <div class="card-header">
+                                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#multiCollapseExample3" aria-expanded="false" aria-controls="multiCollapseExample2">Incident Number Across Years</button>
+                            </div>
+                            <div class="collapse multi-collapse" id="multiCollapseExample3">
+                                <h8 class="card-title">Click the legend to show or hide the corresponding line</h8>
+                                <div id="line_chart" class="card-body"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!--<div class="pb-2 mb-3"></div>-->
-
-            <!--<div class="container">-->
-                <!--&lt;!&ndash;time slider&ndash;&gt;-->
-                <!--<p>Time Slider:-->
-                    <!--<input type="range" min="1" max="100" value="50" class="slider-color" id="id1">-->
-                <!--</p>-->
-            <!--</div>-->
 
         </main>
 
@@ -257,33 +215,46 @@
 </div>
 
 
-<!--Bootstrap js file-->
+<!--Bootstrap JS-->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
 <!-- Icons -->
 <script src="https://unpkg.com/feather-icons/dist/feather.min.js"></script>
 <script>
-    feather.replace()
+    feather.replace();
 </script>
 
-
-<!--leaflet-->
-<script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
-        integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
-        crossorigin=""></script>
-<!--leaflet.markerCluster-->
+<!--leaflet basic JS-->
+<script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js" integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA==" crossorigin=""></script>
+<!--leaflet.markerCluster JS-->
 <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
-
-<!--geoJSON and d3-->
-<script src="https://d3js.org/d3-array.v1.min.js"></script>
-<!--d3 must be version 5 to support csv function in ch_incident.js-->
+<!--d3 must be version 5 to support csv function in map.js-->
 <script src="https://d3js.org/d3.v5.min.js"></script>
-<script src="https://d3js.org/d3-geo.v1.min.js"></script>
-<script src="ch_incident.js"></script>
+<!--Esri Leaflet geocoding extension JS -->
+<script src="https://unpkg.com/esri-leaflet@2.2.3/dist/esri-leaflet.js" integrity="sha512-YZ6b5bXRVwipfqul5krehD9qlbJzc6KOGXYsDjU9HHXW2gK57xmWl2gU6nAegiErAqFXhygKIsWPKbjLPXVb2g==" crossorigin=""></script>
+<script src="https://unpkg.com/esri-leaflet-geocoder@2.2.13/dist/esri-leaflet-geocoder.js" integrity="sha512-zdT4Pc2tIrc6uoYly2Wp8jh6EPEWaveqqD3sT0lf5yei19BC1WulGuh5CesB0ldBKZieKGD7Qyf/G0jdSe016A==" crossorigin=""></script>
+<!--self defined JS-->
+<script src="map.js"></script>
+<script src="chart.js"></script>
+<script src="line_chart.js"></script>
 <script>
+
     map_vis = new MapVis();
     map_vis.render();
+    lineChart();
+    var searchControl = L.esri.Geocoding.geosearch().addTo(map);
+
+    var results = L.layerGroup().addTo(map);
+
+    searchControl.on('results', function(data){
+        results.clearLayers();
+        for (var i = data.results.length - 1; i >= 0; i--) {
+            results.addLayer(L.marker(data.results[i].latlng));
+        }
+    });
+
 </script>
+
 </body>
 </html>
