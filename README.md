@@ -1,4 +1,4 @@
-# Chapel_Hill_Incident_VisSystem(link here)
+# Chapel_Hill_Incident_VisSystem
 Visualize the incidents happened in Chapel Hill from 2013-2017
 
 Dataset: https://www.chapelhillopendata.org
